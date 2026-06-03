@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monitor — Вход</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f3;display:flex;align-items:center;justify-content:center;min-height:100vh}
+.card{background:#fff;border:0.5px solid rgba(0,0,0,0.12);border-radius:16px;padding:2.5rem 2rem;width:100%;max-width:380px}
+.logo{text-align:center;margin-bottom:2rem}
+.logo i{font-size:36px;color:#534AB7}
+.logo h1{font-size:20px;font-weight:500;margin-top:8px}
+.logo p{font-size:13px;color:#6b6b68;margin-top:4px}
+label{display:block;font-size:13px;color:#6b6b68;margin-bottom:6px;margin-top:16px}
+input{width:100%;padding:9px 12px;border:0.5px solid rgba(0,0,0,0.12);border-radius:8px;font-size:14px;outline:none;font-family:inherit}
+input:focus{border-color:#534AB7;box-shadow:0 0 0 3px #EEEDFE}
+.btn{width:100%;padding:10px;border-radius:8px;font-size:14px;cursor:pointer;border:none;background:#534AB7;color:#fff;font-family:inherit;margin-top:20px;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn:hover{background:#3C3489}
+.error{color:#993C1D;font-size:13px;margin-top:8px;display:none}
+.hint{font-size:12px;color:#6b6b68;margin-top:1rem;text-align:center}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <i class="ti ti-chart-bar"></i>
+    <h1>Monitor</h1>
+    <p>Система мониторинга сотрудников</p>
+  </div>
+  <label>Логин</label>
+  <input type="text" id="login" placeholder="username" autocomplete="username">
+  <label>Пароль</label>
+  <input type="password" id="pass" placeholder="••••••" autocomplete="current-password">
+  <p class="error" id="err">Неверный логин или пароль</p>
+  <button class="btn" onclick="doLogin()"><i class="ti ti-login"></i> Войти</button>
+</div>
+<script>
+async function doLogin(){
+  const login=document.getElementById('login').value.trim();
+  const pass=document.getElementById('pass').value;
+  const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({login,password:pass})});
+  if(r.ok){ location.href='/'; }
+  else{ document.getElementById('err').style.display='block'; }
+}
+document.getElementById('pass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+</script>
+</body>
+</html>

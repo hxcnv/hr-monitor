@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HR Monitor</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f3;color:#1a1a1a;min-height:100vh}
+:root{--bg:#fff;--bg2:#f5f5f3;--bg3:#ededea;--txt:#1a1a1a;--txt2:#6b6b68;--border:rgba(0,0,0,0.12);--accent:#534AB7;--accent-light:#EEEDFE;--accent-dark:#3C3489;--success:#0F6E56;--success-light:#E1F5EE;--danger:#993C1D;--danger-light:#FAECE7;--warn:#854F0B;--warn-light:#FAEEDA}
+.app-layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+.sidebar{background:var(--bg);border-right:0.5px solid var(--border);padding:1.5rem 0;display:flex;flex-direction:column}
+.sidebar-logo{padding:0 1.25rem 1.5rem;border-bottom:0.5px solid var(--border);margin-bottom:1rem}
+.sidebar-logo span{font-size:15px;font-weight:500}
+.sidebar-logo small{display:block;font-size:12px;color:var(--txt2)}
+nav a{display:flex;align-items:center;gap:10px;padding:9px 1.25rem;font-size:14px;color:var(--txt2);text-decoration:none;cursor:pointer;transition:background 0.1s}
+nav a:hover{background:var(--bg2);color:var(--txt)}
+nav a.active{background:var(--accent-light);color:var(--accent);font-weight:500}
+nav a i{font-size:18px}
+.sidebar-footer{margin-top:auto;padding:1rem 1.25rem;border-top:0.5px solid var(--border)}
+.user-info strong{display:block;font-size:13px}
+.user-info span{font-size:12px;color:var(--txt2)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-size:14px;cursor:pointer;border:0.5px solid var(--border);background:var(--bg);color:var(--txt);font-family:inherit;transition:background 0.15s}
+.btn:hover{background:var(--bg3)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent-dark)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-full{width:100%;justify-content:center;margin-top:8px}
+.main-content{padding:2rem;overflow-y:auto}
+.page-title{font-size:20px;font-weight:500;margin-bottom:1.5rem}
+label{display:block;font-size:13px;color:var(--txt2);margin-bottom:6px;margin-top:14px}
+input,select,textarea{width:100%;padding:9px 12px;border:0.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--bg);color:var(--txt);outline:none;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:2rem}
+.metric-card{background:var(--bg2);border-radius:8px;padding:1rem}
+.metric-card .mlabel{font-size:12px;color:var(--txt2);margin-bottom:6px}
+.metric-card .mvalue{font-size:24px;font-weight:500}
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.5rem}
+.card-header{padding:1rem 1.25rem;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-header h2{font-size:15px;font-weight:500}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{padding:10px 1.25rem;text-align:left;font-size:12px;color:var(--txt2);font-weight:400;border-bottom:0.5px solid var(--border)}
+td{padding:10px 1.25rem;border-bottom:0.5px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg2)}
+.badge{display:inline-block;font-size:12px;padding:3px 10px;border-radius:20px}
+.badge-success{background:var(--success-light);color:var(--success)}
+.badge-warn{background:var(--warn-light);color:var(--warn)}
+.badge-danger{background:var(--danger-light);color:var(--danger)}
+.badge-dept{background:var(--accent-light);color:var(--accent)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0}
+.kpi-bar{height:8px;border-radius:4px;background:var(--bg3);overflow:hidden;margin-top:4px}
+.kpi-fill{height:100%;border-radius:4px;transition:width 0.4s}
+.kpi-good{background:var(--success)}
+.kpi-mid{background:#EF9F27}
+.kpi-bad{background:#E24B4A}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg);border-radius:16px;padding:1.75rem;width:100%;max-width:440px;border:0.5px solid var(--border)}
+.modal h2{font-size:17px;font-weight:500;margin-bottom:4px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1.5rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.flex-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:1rem}
+.tabs{display:flex;gap:2px;background:var(--bg2);border-radius:8px;padding:3px;margin-bottom:1.5rem;width:fit-content}
+.tab{padding:6px 16px;border-radius:6px;font-size:13px;cursor:pointer;color:var(--txt2);border:none;background:transparent;font-family:inherit}
+.tab.active{background:var(--bg);color:var(--txt);font-weight:500}
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:80px;margin-top:1rem}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar-col .bar{width:100%;border-radius:4px 4px 0 0;background:var(--accent);opacity:0.75}
+.bar-col .bar-label{font-size:11px;color:var(--txt2)}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:opacity 0.3s;z-index:999}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="app-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <i class="ti ti-chart-bar" style="color:var(--accent);font-size:20px"></i>
+      <span> HR Monitor</span>
+      <small id="role-label">—</small>
+    </div>
+    <nav id="sidebar-nav"></nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <strong id="sidebar-name">—</strong>
+        <span id="sidebar-role">—</span>
+      </div>
+      <button class="btn btn-full" onclick="logout()" style="margin-top:8px;font-size:13px"><i class="ti ti-logout"></i> Выйти</button>
+    </div>
+  </div>
+  <div class="main-content" id="main"></div>
+</div>
+
+<!-- Модал: сотрудник -->
+<div class="modal-overlay" id="modal-emp">
+  <div class="modal">
+    <h2 id="modal-emp-title">Добавить сотрудника</h2>
+    <div class="form-row" style="margin-top:1rem">
+      <div><label>Имя</label><input id="e-fname" placeholder="Иван"></div>
+      <div><label>Фамилия</label><input id="e-lname" placeholder="Иванов"></div>
+    </div>
+    <label>Отдел</label>
+    <select id="e-dept"><option>Онлайн работники</option><option>Офлайн работники</option></select>
+    <label>Должность</label><select id="e-pos"><option>Маркетолог</option><option>Бухгалтер</option><option>Системный администратор</option><option>Водитель</option><option>Механик</option></select>
+    <label>Дата найма (ГГГГ-ММ)</label><input id="e-since" placeholder="2024-01">
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-emp')">Отмена</button>
+      <button class="btn btn-primary" onclick="saveEmployee()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модал: задача -->
+<div class="modal-overlay" id="modal-task">
+  <div class="modal">
+    <h2>Новая задача</h2>
+    <label>Сотрудник</label><select id="t-emp"></select>
+    <label>Название</label><input id="t-title" placeholder="Подготовить отчёт">
+    <label>Описание</label><textarea id="t-desc" rows="3" placeholder="Необязательно"></textarea>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-task')">Отмена</button>
+      <button class="btn btn-primary" onclick="saveTask()">Создать</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модал: проверка задачи + KPI -->
+<div class="modal-overlay" id="modal-review">
+  <div class="modal">
+    <h2>Проверка задачи</h2>
+    <p id="review-task-title" style="color:var(--txt2);font-size:14px;margin-bottom:1rem"></p>
+    <label>Балл KPI (1–100)</label><input type="number" id="r-score" min="1" max="100" value="80">
+    <label>Комментарий</label><textarea id="r-comment" rows="2" placeholder="Необязательно"></textarea>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-review')">Отмена</button>
+      <button class="btn btn-primary" onclick="saveReview()">Выставить KPI</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модал: KPI -->
+<div class="modal-overlay" id="modal-kpi">
+  <div class="modal">
+    <h2>Добавить оценку KPI</h2>
+    <label>Сотрудник</label><select id="k-emp"></select>
+    <label>Показатель</label>
+    <select id="k-metric"><option>Выполнение задач</option><option>Качество работы</option><option>Коммуникация</option><option>Инициативность</option><option>Дисциплина</option></select>
+    <label>Балл (1–100)</label><input type="number" id="k-score" min="1" max="100" value="80">
+    <label>Комментарий</label><textarea id="k-comment" rows="2" placeholder="Необязательно"></textarea>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-kpi')">Отмена</button>
+      <button class="btn btn-primary" onclick="saveKPI()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let ME = null, EMPLOYEES = [], KPIS = [];
+
+async function api(method, url, body){
+  const opts = {method, headers:{'Content-Type':'application/json'}};
+  if(body) opts.body = JSON.stringify(body);
+  const r = await fetch(url, opts);
+  return r.json();
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function initials(e){ return (e.fname[0]+e.lname[0]).toUpperCase(); }
+
+function badgeKPI(v){
+  if(v==null||v===''||isNaN(v)) return '<span class="badge" style="background:var(--bg3);color:var(--txt2)">—</span>';
+  v=Math.round(v);
+  const cls=v>=80?'badge-success':v>=60?'badge-warn':'badge-danger';
+  return `<span class="badge ${cls}">${v}</span>`;
+}
+function kpiClass(v){ return v>=80?'kpi-good':v>=60?'kpi-mid':'kpi-bad'; }
+
+async function logout(){
+  await api('POST','/api/logout');
+  location.href='/login';
+}
+
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); }));
+
+// ---- NAV ----
+function buildNav(){
+  const nav = document.getElementById('sidebar-nav');
+  document.getElementById('sidebar-name').textContent = ME.name;
+  document.getElementById('sidebar-role').textContent = ME.role==='manager'?'Руководитель':'Сотрудник';
+  document.getElementById('role-label').textContent = ME.role==='manager'?'Панель руководителя':'Мой кабинет';
+  if(ME.role==='manager'){
+    nav.innerHTML=`
+      <a onclick="go('dashboard')" id="nav-dashboard"><i class="ti ti-layout-dashboard"></i>Дашборд</a>
+      <a onclick="go('employees')" id="nav-employees"><i class="ti ti-users"></i>Сотрудники</a>
+      <a onclick="go('tasks')" id="nav-tasks"><i class="ti ti-checklist"></i>Задачи</a>
+      <a onclick="go('kpi')" id="nav-kpi"><i class="ti ti-chart-line"></i>KPI и оценки</a>
+      <a onclick="go('reports')" id="nav-reports"><i class="ti ti-file-analytics"></i>Отчёты</a>`;
+    go('dashboard');
+  } else {
+    nav.innerHTML=`
+      <a onclick="go('myprofile')" id="nav-myprofile"><i class="ti ti-user"></i>Мой профиль</a>
+      <a onclick="go('mytasks')" id="nav-mytasks"><i class="ti ti-checklist"></i>Мои задачи</a>
+      <a onclick="go('mykpi')" id="nav-mykpi"><i class="ti ti-chart-bar"></i>Мои KPI</a>`;
+    go('myprofile');
+  }
+}
+
+function go(page){
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
+  const el=document.getElementById('nav-'+page);
+  if(el) el.classList.add('active');
+  if(page==='dashboard') renderDashboard();
+  else if(page==='employees') renderEmployees();
+  else if(page==='kpi') renderKPIPage();
+  else if(page==='tasks') renderTasks();
+  else if(page==='reports') renderReports();
+  else if(page==='myprofile') renderMyProfile();
+  else if(page==='mytasks') renderMyTasks();
+  else if(page==='mykpi') renderMyKPI();
+}
+
+// ---- DASHBOARD ----
+async function renderDashboard(){
+  const mc=document.getElementById('main');
+  const [summary] = await Promise.all([api('GET','/api/reports/summary')]);
+  const total=EMPLOYEES.length;
+  const allAvg=EMPLOYEES.map(e=>{
+    const ks=KPIS.filter(k=>k.employee_id===e.id);
+    return ks.length?ks.reduce((s,k)=>s+k.score,0)/ks.length:null;
+  }).filter(v=>v!==null);
+  const avg=allAvg.length?Math.round(allAvg.reduce((a,b)=>a+b)/allAvg.length):0;
+  const high=allAvg.filter(v=>v>=80).length;
+  const low=allAvg.filter(v=>v<60).length;
+  const maxA=Math.max(...summary.map(d=>d.avg_kpi||0),1);
+  const bars=summary.map(d=>`
+    <div class="bar-col">
+      <div class="bar" style="height:${Math.round((d.avg_kpi||0)/maxA*70)+10}px"></div>
+      <div class="bar-label">${d.dept.substring(0,5)}</div>
+    </div>`).join('');
+  const recent=KPIS.slice(0,5);
+  const rows=recent.map(k=>{
+    const e=EMPLOYEES.find(x=>x.id===k.employee_id);
+    return e?`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">${initials(e)}</div>${e.fname} ${e.lname}</div></td><td>${badgeKPI(k.score)}</td><td style="color:var(--txt2);font-size:13px">${k.date}</td></tr>`:'';
+  }).join('');
+  const deptDist=summary.map(d=>{
+    const pct=Math.round((d.emp_count/total)*100);
+    return `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${d.dept}</span><span style="color:var(--txt2)">${d.emp_count} чел.</span></div>
+      <div class="kpi-bar"><div class="kpi-fill kpi-good" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+  mc.innerHTML=`
+    <h1 class="page-title">Дашборд</h1>
+    <div class="metrics-grid">
+      <div class="metric-card"><div class="mlabel">Сотрудников</div><div class="mvalue">${total}</div></div>
+      <div class="metric-card"><div class="mlabel">Средний KPI</div><div class="mvalue">${avg}</div></div>
+      <div class="metric-card"><div class="mlabel">Требуют внимания</div><div class="mvalue" style="color:var(--danger)">${low}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+      <div class="card"><div class="card-header"><h2>KPI по отделам</h2></div><div style="padding:1rem 1.25rem"><div class="chart-bars">${bars}</div></div></div>
+      <div class="card"><div class="card-header"><h2>Распределение</h2></div><div style="padding:1rem 1.25rem">${deptDist}</div></div>
+    </div>
+    <div class="card"><div class="card-header"><h2>Последние оценки</h2></div>
+    <table><thead><tr><th>Сотрудник</th><th>Балл</th><th>Дата</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+// ---- EMPLOYEES ----
+let editEmpId=null;
+function renderEmployees(){
+  const mc=document.getElementById('main');
+  const rows=EMPLOYEES.map(e=>{
+    const ks=KPIS.filter(k=>k.employee_id===e.id);
+    const avg=ks.length?Math.round(ks.reduce((s,k)=>s+k.score,0)/ks.length):null;
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar">${initials(e)}</div><div><div style="font-weight:500">${e.fname} ${e.lname}</div><div style="font-size:12px;color:var(--txt2)">${e.position}</div></div></div></td>
+      <td><span class="badge badge-dept">${e.dept}</span></td>
+      <td style="color:var(--txt2);font-size:13px">${e.since}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">${badgeKPI(avg)}<div style="flex:1;min-width:60px"><div class="kpi-bar"><div class="kpi-fill ${kpiClass(avg||0)}" style="width:${avg||0}%"></div></div></div></div></td>
+      <td><button class="btn btn-sm" onclick="openEditEmp(${e.id})"><i class="ti ti-edit"></i></button>
+          <button class="btn btn-sm" style="color:var(--danger)" onclick="deleteEmp(${e.id})"><i class="ti ti-trash"></i></button></td>
+    </tr>`;
+  }).join('');
+  mc.innerHTML=`
+    <h1 class="page-title">Сотрудники</h1>
+    <div class="flex-row"><button class="btn btn-primary" onclick="openAddEmp()"><i class="ti ti-plus"></i> Добавить</button></div>
+    <div class="card"><table><thead><tr><th>Сотрудник</th><th>Отдел</th><th>С даты</th><th>KPI</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function openAddEmp(){
+  editEmpId=null;
+  document.getElementById('modal-emp-title').textContent='Добавить сотрудника';
+  ['e-fname','e-lname','e-pos','e-since'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('modal-emp').classList.add('open');
+}
+function openEditEmp(id){
+  editEmpId=id;
+  const e=EMPLOYEES.find(x=>x.id===id);
+  document.getElementById('modal-emp-title').textContent='Редактировать сотрудника';
+  document.getElementById('e-fname').value=e.fname;
+  document.getElementById('e-lname').value=e.lname;
+  document.getElementById('e-dept').value=e.dept;
+  document.getElementById('e-pos').value=e.position;
+  document.getElementById('e-since').value=e.since;
+  document.getElementById('modal-emp').classList.add('open');
+}
+async function saveEmployee(){
+  const body={fname:document.getElementById('e-fname').value.trim(),lname:document.getElementById('e-lname').value.trim(),dept:document.getElementById('e-dept').value,position:document.getElementById('e-pos').value.trim(),since:document.getElementById('e-since').value.trim()};
+  if(!body.fname||!body.lname) return;
+  if(editEmpId) await api('PUT',`/api/employees/${editEmpId}`,body);
+  else await api('POST','/api/employees',body);
+  await loadData(); closeModal('modal-emp'); renderEmployees(); toast('Сохранено');
+}
+async function deleteEmp(id){
+  if(!confirm('Удалить сотрудника и все его оценки?')) return;
+  await api('DELETE',`/api/employees/${id}`);
+  await loadData(); renderEmployees(); toast('Удалено');
+}
+
+// ---- TASKS (manager) ----
+let TASKS = [];
+let reviewTaskId = null;
+
+function renderTasks(){
+  const mc=document.getElementById('main');
+  const newTasks=TASKS.filter(t=>t.status==='new');
+  const doneTasks=TASKS.filter(t=>t.status==='done');
+  const makeRows=(arr,isDone)=>arr.map(t=>{
+    const e=EMPLOYEES.find(x=>x.id===t.employee_id);
+    const statusBadge=isDone
+      ?'<span class="badge badge-success">Выполнена</span>'
+      :'<span class="badge" style="background:var(--accent-light);color:var(--accent)">Новая</span>';
+    const actions=isDone
+      ?`<button class="btn btn-sm btn-primary" onclick="openReview(${t.id})"><i class="ti ti-award"></i> KPI</button>
+         <button class="btn btn-sm" style="color:var(--danger)" onclick="deleteTask(${t.id})"><i class="ti ti-trash"></i></button>`
+      :`<button class="btn btn-sm" style="color:var(--danger)" onclick="deleteTask(${t.id})"><i class="ti ti-trash"></i></button>`;
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">${e?initials(e):'?'}</div>${e?e.fname+' '+e.lname:'—'}</div></td>
+      <td><div style="font-weight:500">${t.title}</div><div style="font-size:12px;color:var(--txt2)">${t.description||''}</div></td>
+      <td>${statusBadge}</td>
+      <td style="font-size:13px;color:var(--txt2)">${t.created_at}</td>
+      <td style="font-size:13px;color:var(--txt2)">${t.done_at||'—'}</td>
+      <td><div style="display:flex;gap:6px">${actions}</div></td>
+    </tr>`;
+  }).join('');
+  mc.innerHTML=`
+    <h1 class="page-title">Задачи</h1>
+    <div class="flex-row"><button class="btn btn-primary" onclick="openTaskModal()"><i class="ti ti-plus"></i> Новая задача</button></div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'t-new')">Новые (${newTasks.length})</button>
+      <button class="tab" onclick="switchTab(this,'t-done')">Выполненные (${doneTasks.length})</button>
+    </div>
+    <div id="t-new">
+      <div class="card"><table><thead><tr><th>Сотрудник</th><th>Задача</th><th>Статус</th><th>Создана</th><th>Выполнена</th><th></th></tr></thead>
+      <tbody>${makeRows(newTasks,false)||'<tr><td colspan="6" style="text-align:center;color:var(--txt2);padding:2rem">Нет новых задач</td></tr>'}</tbody></table></div>
+    </div>
+    <div id="t-done" style="display:none">
+      <div class="card"><table><thead><tr><th>Сотрудник</th><th>Задача</th><th>Статус</th><th>Создана</th><th>Выполнена</th><th></th></tr></thead>
+      <tbody>${makeRows(doneTasks,true)||'<tr><td colspan="6" style="text-align:center;color:var(--txt2);padding:2rem">Нет выполненных задач</td></tr>'}</tbody></table></div>
+    </div>`;
+}
+
+function openTaskModal(){
+  const sel=document.getElementById('t-emp');
+  sel.innerHTML=EMPLOYEES.map(e=>`<option value="${e.id}">${e.fname} ${e.lname}</option>`).join('');
+  document.getElementById('t-title').value='';
+  document.getElementById('t-desc').value='';
+  document.getElementById('modal-task').classList.add('open');
+}
+
+async function saveTask(){
+  const body={employee_id:parseInt(document.getElementById('t-emp').value),title:document.getElementById('t-title').value.trim(),description:document.getElementById('t-desc').value.trim()};
+  if(!body.title) return;
+  await api('POST','/api/tasks',body);
+  await loadData(); closeModal('modal-task'); renderTasks(); toast('Задача создана');
+}
+
+async function deleteTask(id){
+  if(!confirm('Удалить задачу?')) return;
+  await api('DELETE',`/api/tasks/${id}`);
+  await loadData(); renderTasks(); toast('Удалено');
+}
+
+function openReview(id){
+  reviewTaskId=id;
+  const t=TASKS.find(x=>x.id===id);
+  document.getElementById('review-task-title').textContent=t.title;
+  document.getElementById('r-score').value=80;
+  document.getElementById('r-comment').value='';
+  document.getElementById('modal-review').classList.add('open');
+}
+
+async function saveReview(){
+  const t=TASKS.find(x=>x.id===reviewTaskId);
+  const body={employee_id:t.employee_id,metric:'Выполнение задачи',score:parseInt(document.getElementById('r-score').value),comment:document.getElementById('r-comment').value.trim(),date:new Date().toISOString().substring(0,10)};
+  await api('POST','/api/kpis',body);
+  await loadData(); closeModal('modal-review'); renderTasks(); toast('KPI выставлен');
+}
+
+// ---- MY TASKS (employee) ----
+function renderMyTasks(){
+  const mc=document.getElementById('main');
+  const myTasks=TASKS.filter(t=>t.employee_id===ME.emp_id);
+  const newT=myTasks.filter(t=>t.status==='new');
+  const doneT=myTasks.filter(t=>t.status==='done');
+  const makeRows=(arr,canComplete)=>arr.map(t=>`<tr>
+    <td><div style="font-weight:500">${t.title}</div><div style="font-size:12px;color:var(--txt2)">${t.description||''}</div></td>
+    <td>${t.status==='new'?'<span class="badge" style="background:var(--accent-light);color:var(--accent)">Новая</span>':'<span class="badge badge-success">Выполнена</span>'}</td>
+    <td style="font-size:13px;color:var(--txt2)">${t.created_at}</td>
+    <td>${canComplete?`<button class="btn btn-sm btn-primary" onclick="completeTask(${t.id})"><i class="ti ti-check"></i> Выполнено</button>`:'—'}</td>
+  </tr>`).join('');
+  mc.innerHTML=`
+    <h1 class="page-title">Мои задачи</h1>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'mt-new')">Новые (${newT.length})</button>
+      <button class="tab" onclick="switchTab(this,'mt-done')">Выполненные (${doneT.length})</button>
+    </div>
+    <div id="mt-new">
+      <div class="card"><table><thead><tr><th>Задача</th><th>Статус</th><th>Создана</th><th></th></tr></thead>
+      <tbody>${makeRows(newT,true)||'<tr><td colspan="4" style="text-align:center;color:var(--txt2);padding:2rem">Нет новых задач</td></tr>'}</tbody></table></div>
+    </div>
+    <div id="mt-done" style="display:none">
+      <div class="card"><table><thead><tr><th>Задача</th><th>Статус</th><th>Создана</th><th></th></tr></thead>
+      <tbody>${makeRows(doneT,false)||'<tr><td colspan="4" style="text-align:center;color:var(--txt2);padding:2rem">Нет выполненных задач</td></tr>'}</tbody></table></div>
+    </div>`;
+}
+
+async function completeTask(id){
+  await api('POST',`/api/tasks/${id}/done`);
+  await loadData(); renderMyTasks(); toast('Задача выполнена!');
+}
+
+// ---- KPI PAGE ----
+function renderKPIPage(){
+  const mc=document.getElementById('main');
+  const rows=KPIS.map(k=>{
+    const e=EMPLOYEES.find(x=>x.id===k.employee_id);
+    return e?`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">${initials(e)}</div>${e.fname} ${e.lname}</div></td><td>${badgeKPI(k.score)}</td><td style="font-size:13px;color:var(--txt2)">${k.date}</td><td><button class="btn btn-sm" style="color:var(--danger)" onclick="deleteKPI(${k.id})"><i class="ti ti-trash"></i></button></td></tr>`:'';
+  }).join('');
+  mc.innerHTML=`
+    <h1 class="page-title">KPI и оценки</h1>
+    <div class="flex-row"><button class="btn btn-primary" onclick="openKPIModal()"><i class="ti ti-plus"></i> Добавить оценку</button></div>
+    <div class="card"><table><thead><tr><th>Сотрудник</th><th>Балл</th><th>Дата</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function openKPIModal(){
+  const sel=document.getElementById('k-emp');
+  sel.innerHTML=EMPLOYEES.map(e=>`<option value="${e.id}">${e.fname} ${e.lname}</option>`).join('');
+  document.getElementById('k-score').value=80;
+  document.getElementById('k-comment').value='';
+  document.getElementById('modal-kpi').classList.add('open');
+}
+async function saveKPI(){
+  const body={employee_id:parseInt(document.getElementById('k-emp').value),metric:document.getElementById('k-metric').value,score:parseInt(document.getElementById('k-score').value),comment:document.getElementById('k-comment').value.trim(),date:new Date().toISOString().substring(0,10)};
+  await api('POST','/api/kpis',body);
+  await loadData(); closeModal('modal-kpi'); renderKPIPage(); toast('Оценка добавлена');
+}
+async function deleteKPI(id){
+  await api('DELETE',`/api/kpis/${id}`);
+  await loadData(); renderKPIPage(); toast('Удалено');
+}
+
+// ---- REPORTS ----
+async function renderReports(){
+  const mc=document.getElementById('main');
+  const [deptData, empData] = await Promise.all([api('GET','/api/reports/summary'), api('GET','/api/reports/employees')]);
+  const deptRows=deptData.map(d=>`<tr><td>${d.dept}</td><td>${d.emp_count}</td><td>${badgeKPI(d.avg_kpi)}</td></tr>`).join('');
+  const empRows=empData.map(e=>`<tr>
+    <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">${e.fname[0]+e.lname[0]}</div>${e.fname} ${e.lname}</div></td>
+    <td><span class="badge badge-dept">${e.dept}</span></td>
+    <td style="color:var(--txt2)">${e.kpi_count}</td>
+    <td>${badgeKPI(e.avg_kpi)}</td>
+    <td style="color:var(--txt2);font-size:13px">${e.best_score||'—'}</td>
+  </tr>`).join('');
+  mc.innerHTML=`
+    <h1 class="page-title">Отчёты</h1>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'rep-dept')">По отделам</button>
+      <button class="tab" onclick="switchTab(this,'rep-emp')">По сотрудникам</button>
+    </div>
+    <div id="rep-dept">
+      <div class="card"><div class="card-header"><h2>Сводка по отделам</h2></div>
+      <table><thead><tr><th>Отдел</th><th>Сотрудников</th><th>Средний KPI</th></tr></thead><tbody>${deptRows}</tbody></table></div>
+    </div>
+    <div id="rep-emp" style="display:none">
+      <div class="card"><div class="card-header"><h2>Сводка по сотрудникам</h2></div>
+      <table><thead><tr><th>Сотрудник</th><th>Отдел</th><th>Оценок</th><th>Средний KPI</th><th>Лучший балл</th></tr></thead><tbody>${empRows}</tbody></table></div>
+    </div>`;
+}
+function switchTab(el,target){
+  el.closest('.tabs').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  // найти все соседние div-контенты через общего родителя
+  const parent=el.closest('.tabs').parentElement;
+  parent.querySelectorAll(':scope > div[id]').forEach(d=>{
+    d.style.display=d.id===target?'block':'none';
+  });
+}
+
+// ---- MY PROFILE ----
+function renderMyProfile(){
+  const mc=document.getElementById('main');
+  const e=EMPLOYEES.find(x=>x.id===ME.emp_id);
+  if(!e){mc.innerHTML='<p style="color:var(--txt2)">Профиль не найден</p>';return;}
+  const ks=KPIS.filter(k=>k.employee_id===e.id);
+  const avg=ks.length?Math.round(ks.reduce((s,k)=>s+k.score,0)/ks.length):null;
+  mc.innerHTML=`
+    <h1 class="page-title">Мой профиль</h1>
+    <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:1.5rem">
+      <div style="width:72px;height:72px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:500">${initials(e)}</div>
+      <div><h2 style="font-size:22px;font-weight:500">${e.fname} ${e.lname}</h2><p style="color:var(--txt2);margin-top:4px">${e.position} · ${e.dept}</p><p style="color:var(--txt2);font-size:13px;margin-top:4px">Работает с: ${e.since}</p></div>
+    </div>
+    <div class="metrics-grid">
+      <div class="metric-card"><div class="mlabel">Средний KPI</div><div class="mvalue">${avg||'—'}</div></div>
+      <div class="metric-card"><div class="mlabel">Оценок получено</div><div class="mvalue">${ks.length}</div></div>
+      <div class="metric-card"><div class="mlabel">Лучший балл</div><div class="mvalue" style="color:var(--success)">${ks.length?Math.max(...ks.map(k=>k.score)):'—'}</div></div>
+    </div>`;
+}
+
+// ---- MY KPI ----
+function renderMyKPI(){
+  const mc=document.getElementById('main');
+  const ks=KPIS.filter(k=>k.employee_id===ME.emp_id);
+  const rows=ks.map(k=>`<tr><td>${k.metric}</td>
+    <td><div style="display:flex;align-items:center;gap:8px">${badgeKPI(k.score)}<div style="flex:1;min-width:80px"><div class="kpi-bar"><div class="kpi-fill ${kpiClass(k.score)}" style="width:${k.score}%"></div></div></div></div></td>
+    <td style="font-size:13px;color:var(--txt2)">${k.comment||'—'}</td>
+    <td style="font-size:13px;color:var(--txt2)">${k.date}</td></tr>`).join('');
+  mc.innerHTML=`
+    <h1 class="page-title">Мои KPI</h1>
+    <div class="card"><table><thead><tr><th>Показатель</th><th>Балл</th><th>Комментарий</th><th>Дата</th></tr></thead>
+    <tbody>${rows||'<tr><td colspan="4" style="color:var(--txt2);text-align:center;padding:2rem">Оценок пока нет</td></tr>'}</tbody></table></div>`;
+}
+
+// ---- INIT ----
+async function loadData(){
+  [EMPLOYEES, KPIS, TASKS] = await Promise.all([api('GET','/api/employees'), api('GET','/api/kpis'), api('GET','/api/tasks')]);
+}
+
+(async()=>{
+  ME = await api('GET','/api/me');
+  if(ME.error){ location.href='/login'; return; }
+  await loadData();
+  buildNav();
+})();
+</script>
+</body>
+</html>
