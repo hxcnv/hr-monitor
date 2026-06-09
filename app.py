@@ -222,9 +222,19 @@ def report_employees():
 def init_db():
     conn = get_db()
     conn.executescript(open('schema.sql').read())
+    # Обновляем пароли правильным хэшем
+    conn.execute('UPDATE users SET password=? WHERE login=?',
+                 (hash_pw('admin123'), 'admin'))
+    conn.execute('UPDATE users SET password=? WHERE login=?',
+                 (hash_pw('pass123'), 'employee1'))
+    conn.execute('UPDATE users SET password=? WHERE login=?',
+                 (hash_pw('pass123'), 'employee2'))
+    conn.commit()
     conn.close()
 
+# Всегда инициализируем БД при старте (для Render)
+if not os.path.exists(DB):
+    init_db()
+
 if __name__ == '__main__':
-    if not os.path.exists(DB):
-        init_db()
     app.run(debug=True)
